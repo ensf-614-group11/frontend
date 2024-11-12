@@ -1,12 +1,12 @@
 import Header from "../components/header";
 
-function Home() {
+function Login() {
   return(
     <div>
       <Header />
-      <h1>This is the Home page</h1>
+      <h1>This is the Login page</h1>
     </div>
   )
 }
 
-export default Home;
+export default Login;
