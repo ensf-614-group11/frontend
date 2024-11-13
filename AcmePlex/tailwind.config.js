@@ -35,6 +35,7 @@ export default {
         acmeYellow: {
           DEFAULT: '#f59e0b',    // Accent yellow color for call-to-action elements
           light: '#fbbf24',      // Lighter yellow for hover effects
+          lighter: '#fde68a',     // Even lighter yellow
           dark: '#d97706',       // Darker shade for emphasis
         } 
       },
