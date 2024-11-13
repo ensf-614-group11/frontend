@@ -1,10 +1,11 @@
 import Header from "../components/header";
+import ShowtimesPage from "../components/ShowtimesPage";
 
 function Showtimes() {
   return(
     <div>
       <Header />
-      <h1>This is the showtimes page</h1>
+      <ShowtimesPage />
     </div>
   )
 }
