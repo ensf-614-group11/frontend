@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import ContainerMain from "./ContainerMain";
 import Select from 'react-select';
 import DatePicker from "react-datepicker";
@@ -10,8 +10,8 @@ function ShowtimesPage() {
   const { selectedMovie, selectedTheatre } = state || {};
 
   const [selectedDate, setSelectedDate] = useState(new Date()); 
-  const [selectedMovieState, setSelectedMovieState] = useState(selectedMovie || "");
-  const [selectedTheatreState, setSelectedTheatreState] = useState(selectedTheatre || "");
+  const [selectedMovieState, setSelectedMovieState] = useState(selectedMovie?.value || "");
+  const [selectedTheatreState, setSelectedTheatreState] = useState(selectedTheatre?.value || "");
   const [movies, setMovies] = useState([]); // replace with API call
   const [theatres, setTheatres] = useState([]); // replace with API call
   const [showtimes, setShowtimes] = useState([]); // replace with API call
@@ -37,33 +37,44 @@ function ShowtimesPage() {
     // Add more mock showtimes as needed
   ];
 
-    // Fetch data (replace with actual API calls)
-    useEffect(() => {
-      setMovies(mockMovies);
-      setTheatres(mockTheatres);
-    }, []);
+  // Fetch data (replace with actual API calls)
+  useEffect(() => {
+    setMovies(mockMovies);
+    setTheatres(mockTheatres);
+  }, []);
 
-    // When setting initial state based on data passed from Homepage
-    useEffect(() => {
-      if(selectedMovie) {
-        setSelectedMovieState(selectedMovie.value);
-      }
-      if(selectedTheatre) {
-        setSelectedTheatreState(selectedTheatre.value);
-      }
-    }, [selectedMovie, selectedTheatre]);
-  
-    // Update showtimes based on selected movie, theatre, and date
-    useEffect(() => {
-      const filteredShowtimes = mockShowtimes.filter(
-        (showtime) =>
-          showtime.date === selectedDate.toISOString().split('T')[0] &&
-          showtime.theatre === selectedTheatreState &&
-          showtime.movie === selectedMovieState
-      );
-      setShowtimes(filteredShowtimes);
+  const formatDateToLocal = (date) => {
+    return date.toLocaleDateString('en-CA');
+  }
 
-    }, [selectedDate, selectedMovieState, selectedTheatreState]);
+  // Filter showtimes based on selected criteria
+  const filteredShowtimes = useMemo(() => {
+    const formattedDate = formatDateToLocal(selectedDate);
+    return mockShowtimes.filter(
+      (showtime) =>
+        showtime.date === formattedDate &&
+      (!selectedTheatreState || showtime.theatre === selectedTheatreState) &&
+      (!selectedMovieState || showtime.movie === selectedMovieState)
+    )
+  }, [selectedDate, selectedMovieState, selectedTheatreState])
+
+  // When setting initial state based on data passed from Homepage
+  useEffect(() => {
+    if(selectedMovie) {
+      setSelectedMovieState(selectedMovie.value);
+    }
+    if(selectedTheatre) {
+      setSelectedTheatreState(selectedTheatre.value);
+    }
+  }, [selectedMovie, selectedTheatre]);
+
+  // Update showtimes based on selected movie, theatre, and date
+  useEffect(() => {
+    setShowtimes(filteredShowtimes);
+  }, [filteredShowtimes]);
+
+  // Helper to find label for selected value
+  const getLabel = (options, value) => options.find((option) => option.value === value)?.label || "Select an option";
 
   return(
     <ContainerMain>
@@ -73,7 +84,7 @@ function ShowtimesPage() {
           <DatePicker
             id="date-selector"
             selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
+            onChange={setSelectedDate}
             dateFormat="yyyy-MM-dd"
             className="w-full border border-neutral-300 rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-acmeBlue-lighter"
           />
@@ -85,7 +96,7 @@ function ShowtimesPage() {
             id="movie-selector"
             options={movies}
             value={movies.find((movie) => movie.value === selectedMovieState)}
-            onChange={(selectedOption) => setSelectedMovieState(selectedOption ? selectedOption.value : "")}
+            onChange={(option) => setSelectedMovieState(option ? option.value : "")}
             className="w-full mt-1"
           />
         </div>
@@ -96,19 +107,25 @@ function ShowtimesPage() {
             id="theatre-selector"
             options={theatres}
             value={theatres.find((theatre) => theatre.value === selectedTheatreState)}
-            onChange={(selectedOption) => setSelectedTheatreState(selectedOption ? selectedOption.value : "")}
+            onChange={(option) => setSelectedTheatreState(option ? option.value : "")}
             className="w-full mt-1"
           />
         </div>
 
         <div>
-          <h3 className="text-xl font-semibold">Here are the showtimes available for {selectedDate.toLocaleDateString()} at {selectedTheatreState ? theatres.find(theatre => theatre.value === selectedTheatreState)?.label : "Select a Theatre"}:</h3>
+          <h3 className="text-xl font-semibold">Here are the showtimes available for {selectedDate.toLocaleDateString()} at {getLabel(theatres, selectedTheatreState)}:</h3>
           <ul className="space-y-2 mt-4">
             {showtimes.length > 0 ? (
               showtimes.map((showtime, index) => (
-                <li key={index} className="flex justify-between border-t pt-2 text-neutral-700">
-                  <span>{showtime.movie} - {showtime.time}</span>
-                </li>
+                <Link
+                  key={index}
+                  to={'/AvailableSeats'}
+                  className="block p-4 bg-white border rounded-lg shadow-lg hover:bg-acmeBlue-lighter"
+                >
+                  <div className='font-semibold text-lg'>{mockMovies.find(movie => movie.value === showtime.movie)?.label}</div>
+                  <div>{showtime.date} - {showtime.time}</div>
+                  <div className='italic'>{mockTheatres.find(theatre => theatre.value === showtime.theatre)?.label}</div>
+                </Link>
               ))
             ) : (
               <p>No showtimes available for the selected filters.</p>
