@@ -1,12 +1,14 @@
 import Header from "../components/header";
+import AvailableSeatsPage from "../components/AvailableSeatsPage";
 
 function AvailableSeats() {
   return(
     <div>
       <Header />
-      <h1>This is the available seats page</h1>
+      <AvailableSeatsPage />
     </div>
   )
 }
+
 
 export default AvailableSeats;

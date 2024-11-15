@@ -5,6 +5,7 @@ import CancelTickets from "./pages/CancelTickets";
 import Showtimes from "./pages/Showtimes";
 import AvailableSeats from "./pages/AvailableSeats"
 import Payment from "./pages/Payment";
+import Confirmation from "./pages/Confirmation";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
       <Route path="/Showtimes" element={<Showtimes />} />
       <Route path="/AvailableSeats" element={<AvailableSeats />} />
       <Route path="/Payment" element={<Payment />} />
+      <Route path="/Confirmation" element={<Confirmation />} />
       <Route path="/CancelTickets" element={<CancelTickets />} />
     </Routes>
   )

@@ -1,10 +1,11 @@
 import Header from "../components/header";
+import PaymentPage from "../components/PaymentPage"
 
 function Payment() {
   return(
     <div>
       <Header />
-      <h1>This is the payments page</h1>
+      <PaymentPage />
     </div>
   )
 }
