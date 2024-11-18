@@ -32,7 +32,7 @@ function PaymentPage() {
     <ContainerMain>
       <div className="container mx-auto p-6">
         <Link
-          to="/AvailableSeats"
+          to="/Showtimes"
           className="inline-block px-4 py-2 text-white bg-neutral-500 rounded-lg hover:bg-acmeYellow mb-5"
         >
           Back

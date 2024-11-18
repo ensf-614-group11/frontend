@@ -1,10 +1,11 @@
 import Header from "../components/header";
+import CancelTicketsPage from "../components/CancelTicketsPage";
 
 function CancelTickets() {
   return(
     <div>
       <Header />
-      <h1>This is the Cancel Tickets page</h1>
+      <CancelTicketsPage />
     </div>
   )
 }

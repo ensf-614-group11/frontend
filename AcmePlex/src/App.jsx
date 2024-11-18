@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom"
 import Home from "./pages/home";
-import Login from "./pages/Login";
+import LoginRegister from "./pages/LoginRegister";
 import CancelTickets from "./pages/CancelTickets";
 import Showtimes from "./pages/Showtimes";
 import AvailableSeats from "./pages/AvailableSeats"
@@ -12,7 +12,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/Login" element={<Login />} />
+      <Route path="/Login" element={<LoginRegister />} />
       <Route path="/Showtimes" element={<Showtimes />} />
       <Route path="/AvailableSeats" element={<AvailableSeats />} />
       <Route path="/Payment" element={<Payment />} />
