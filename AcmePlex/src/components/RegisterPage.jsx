@@ -5,11 +5,16 @@ function RegisterPage({ onSwitch }) {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Add registration logic here (API call)
-    console.log("Register form submitted: ", {firstName, lastName, email, password})
+    console.log("Register form submitted: ", {firstName, lastName, email, password, cardNumber, expiryDate, cvv})
   }
 
   return (
@@ -70,6 +75,51 @@ function RegisterPage({ onSwitch }) {
             placeholder="Enter your password"
             required
           />
+        </div>
+        <h2 className="mt-6 text-lg font-semibold">Credit Card Information</h2>
+        <div>
+          <label htmlFor="cardNumber" className="block font-medium">
+            Card Number
+          </label>
+          <input
+            type="text"
+            id="cardNumber"
+            value={cardNumber}
+            onChange={(e) => setCardNumber(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            placeholder="Enter card number"
+            required
+          />
+        </div>
+        <div className="flex space-x-4">
+          <div className="flex-1">
+            <label htmlFor="expiryDate" className="block font-medium">
+              Expiry Date (MM/YY)
+            </label>
+            <input
+              type="text"
+              id="expiryDate"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="MM/YY"
+              required
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="cvv" className="block font-medium">
+              CVV
+            </label>
+            <input
+              type="text"
+              id="cvv"
+              value={cvv}
+              onChange={(e) => setCvv(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="CVV"
+              required
+            />
+          </div>
         </div>
       </div>
       <button

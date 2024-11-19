@@ -48,6 +48,12 @@ function AvailableSeatsPage() {
           <span className="text-acmeYellow-dark">{showtime?.time || "Time"}</span>
         </h2>
         <div className="space-y-4">
+          {/* Screen Indicator */}
+          <div className="flex justify-center items-center mb-4">
+            <div className="w-full h-8 bg-acmeBlue-lighter text-white text-center font-bold rounded-t-lg">
+              SCREEN
+            </div>
+          </div>
           {/* Seat Selection Grid */}
           <div className="grid grid-cols-8 gap-2">
             {mockSeats.flat().map((seat) => (
@@ -68,14 +74,14 @@ function AvailableSeatsPage() {
             ))}
           </div>
           {/* Legend */}
-          <div className="flex space-x-4">
-            <span className="flex items-center">
+          <div className="flex flex-wrap items-center space-x-4">
+            <span className="flex items-center mb-3">
               <div className="w-6 h-6 bg-gray-300 rounded-lg mr-2"></div>Booked
             </span>
-            <span className="flex items-center">
+            <span className="flex items-center mb-3">
               <div className="w-6 h-6 bg-white border border-neutral-300 rounded-lg mr-2"></div>Available
             </span>
-            <span className="flex items-center">
+            <span className="flex items-center mb-3">
               <div className="w-6 h-6 bg-acmeYellow-dark text-white rounded-lg mr-2"></div>Selected
             </span>
           </div>

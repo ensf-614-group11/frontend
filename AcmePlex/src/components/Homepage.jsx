@@ -71,7 +71,7 @@ function Homepage() {
 
       <div className='border-t border-dotted border-neutral-300 my-4'></div>
 
-      <Link to="/login">
+      <Link to="/login" state={{ isLogin: false }}>
         <button className='w-full bg-acmeBlue text-neutral-100 rounded-lg p-2 mt-4 hover:bg-acmeBlue-lighter focus:outline-none focus:ring-2 focus:ring-neutral-300'>
           Register for Premium
         </button>

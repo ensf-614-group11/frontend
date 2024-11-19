@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import ContainerMain from "../components/ContainerMain";
 import LoginPage from "../components/LoginPage";
 import RegisterPage from "../components/RegisterPage";
 
 function LoginRegister() {
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+  const { isLogin: initialIsLogin } = location.state || { isLogin: true };
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
 
   const toggleForm = () => {
     setIsLogin((prev) => !prev);
