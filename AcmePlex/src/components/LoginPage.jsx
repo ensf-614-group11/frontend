@@ -1,13 +1,41 @@
 import { useState } from "react";
+import AppAPI from "./AppAPI";
 
 function LoginPage({ onSwitch }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(""); 
+  const [loading, setLoading] = useState(false); 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add login logic here (API calls)
     console.log("Login for submitted", {email, password});
+    setLoading(true);
+    setError("");
+
+    // const loginData = {
+    //   email,
+    //   password,
+    // };
+
+    try {
+      const response = await AppAPI.post(
+        "auth/login",
+        { email, password },
+        {},
+        "defaultLogin"
+      );
+
+      console.log("Login success:", response);
+      // You can store the token or user info if needed
+      // For example, save the JWT token in localStorage or cookies
+      localStorage.setItem("authToken", response.data.token); // Example if the response contains a token
+    } catch (error) {
+      console.error("Login failed:", error)
+      setError("Invalid email or password"); // Set error message for UI
+    } finally {
+      setLoading(false) // stop loading state
+    }
   };
 
   return (

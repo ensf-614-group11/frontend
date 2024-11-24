@@ -1,19 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import ContainerMain from "./ContainerMain";
+import AppAPI from "./AppAPI";
 
 function AvailableSeatsPage() {
   const { state } = useLocation();
   const { showtime } = state || {}
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [seats, setSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data for seat availability (to be replaced with API call)
-  const mockSeats = Array.from({length: 5}, (_, row) => 
-    Array.from({length: 8}, (_, col) => ({
-        id: `${String.fromCharCode(65 + row)}${col + 1}`,
-        isBooked: Math.random() < 0.2 // randomly mark some seats as booked
-    })))
+  console.log("state received:", state)
+
   const mockTicketPrice = 15;
+
+  useEffect(() => {
+    if(showtime?.id) {
+      const fetchSeats = async () => {
+        try {
+          const seatData = await AppAPI.get(`availableSeats/${showtime.id}`);
+          setSeats(seatData);
+        } catch (error) {
+          setError("Failed to load seat availability:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchSeats();
+    }
+  }, [showtime?.id])
+
 
   // Toggle seat selection
   const toggleSeatSelection = (seatID) => {
@@ -42,50 +60,57 @@ function AvailableSeatsPage() {
         </Link>
         <h2 className="text-2xl font-bold text-center">
           Available seats for{" "}
-          <span className="text-acmeYellow-dark">{showtime?.movie || "Movie"}</span> at{" "}
-          <span className="text-acmeYellow-dark">{showtime?.theatre || "Theatre"}</span> on{" "}
+          <span className="text-acmeYellow-dark">{showtime?.movieTitle || "Movie"}</span> at{" "}
+          <span className="text-acmeYellow-dark">{showtime?.theatreName || "Theatre"}</span> on{" "}
           <span className="text-acmeYellow-dark">{formatDateLong(showtime?.date) || "Date"}</span> at{" "} 
           <span className="text-acmeYellow-dark">{showtime?.time || "Time"}</span>
         </h2>
-        <div className="space-y-4">
-          {/* Screen Indicator */}
-          <div className="flex justify-center items-center mb-4">
-            <div className="w-full h-8 bg-acmeBlue-lighter text-white text-center font-bold rounded-t-lg">
-              SCREEN
+
+        {loading ? (
+          <div className="text-center text-lg">Loading seat availability...</div>
+        ) : error ? (
+          <div className="text-center text-lg text-red-600">{error}</div>
+        ) : (
+          <div className="space-y-4">
+            {/* Screen Indicator */}
+            <div className="flex justify-center items-center mb-4">
+              <div className="w-full h-8 bg-acmeBlue-lighter text-white text-center font-bold rounded-t-lg">
+                SCREEN
+              </div>
+            </div>
+            {/* Seat Selection Grid */}
+            <div className="grid grid-cols-8 gap-2">
+              {seats.map((seat) => (
+                <button
+                  key={seat.seatId}
+                  className={`w-10 h-10 text-center rounded-lg ${
+                    seat.available
+                      ? selectedSeats.includes(seat.seatId)
+                        ? "bg-acmeYellow-dark text-white"
+                        : "bg-white border border-neutral-300 hover:bg-acmeYellowlight"
+                      : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                  onClick={() => seat.available && toggleSeatSelection(seat.seatId)}
+                  disabled={!seat.available}
+                >
+                  {seat.seatId}
+                </button>
+              ))}
+            </div>
+            {/* Legend */}
+            <div className="flex flex-wrap items-center space-x-4">
+              <span className="flex items-center mb-3">
+                <div className="w-6 h-6 bg-gray-300 rounded-lg mr-2"></div>Booked
+              </span>
+              <span className="flex items-center mb-3">
+                <div className="w-6 h-6 bg-white border border-neutral-300 rounded-lg mr-2"></div>Available
+              </span>
+              <span className="flex items-center mb-3">
+                <div className="w-6 h-6 bg-acmeYellow-dark text-white rounded-lg mr-2"></div>Selected
+              </span>
             </div>
           </div>
-          {/* Seat Selection Grid */}
-          <div className="grid grid-cols-8 gap-2">
-            {mockSeats.flat().map((seat) => (
-              <button
-                key={seat.id}
-                className={`w-10 h-10 text-center rounded-lg ${
-                  seat.isBooked
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : selectedSeats.includes(seat.id)
-                    ? "bg-acmeYellow-dark text-white"
-                    : "bg-white border border-neutral-300 hover:bg-acmeYellowlight"
-                }`}
-                onClick={() => !seat.isBooked && toggleSeatSelection(seat.id)}
-                disabled={seat.isBooked}
-              >
-                {seat.id}
-              </button>
-            ))}
-          </div>
-          {/* Legend */}
-          <div className="flex flex-wrap items-center space-x-4">
-            <span className="flex items-center mb-3">
-              <div className="w-6 h-6 bg-gray-300 rounded-lg mr-2"></div>Booked
-            </span>
-            <span className="flex items-center mb-3">
-              <div className="w-6 h-6 bg-white border border-neutral-300 rounded-lg mr-2"></div>Available
-            </span>
-            <span className="flex items-center mb-3">
-              <div className="w-6 h-6 bg-acmeYellow-dark text-white rounded-lg mr-2"></div>Selected
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Selected Seats Summary */}
         {selectedSeats.length > 0 && (

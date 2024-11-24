@@ -4,6 +4,7 @@ import ContainerMain from "./ContainerMain";
 import Select from 'react-select';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // For date picker styling
+import AppAPI from './AppAPI';
 
 function ShowtimesPage() {
   const { state } = useLocation();
@@ -12,52 +13,81 @@ function ShowtimesPage() {
   const [selectedDate, setSelectedDate] = useState(new Date()); 
   const [selectedMovieState, setSelectedMovieState] = useState(selectedMovie?.value || "");
   const [selectedTheatreState, setSelectedTheatreState] = useState(selectedTheatre?.value || "");
-  const [movies, setMovies] = useState([]); // replace with API call
-  const [theatres, setTheatres] = useState([]); // replace with API call
-  const [showtimes, setShowtimes] = useState([]); // replace with API call
+  const [movies, setMovies] = useState([]); 
+  const [theatres, setTheatres] = useState([]); 
+  const [showtimes, setShowtimes] = useState([]); 
 
-  // Example mock data (to be replaced with API calls)
-  const mockMovies = [
-    { value: "", label: "Any Movie" },
-    { value: "movie1", label: "Movie 1" },
-    { value: "movie2", label: "Movie 2" },
-    { value: "movie3", label: "Movie 3" },
-  ];
-
-  const mockTheatres = [
-    { value: "", label: "Any Theatre"},
-    { value: "theatre1", label: "Theatre 1" },
-    { value: "theatre2", label: "Theatre 2" },
-    { value: "theatre3", label: "Theatre 3" },
-  ];
- 
-  const mockShowtimes = [
-    { movie: "movie1", theatre: "theatre1", date: "2024-11-14", time: "2:00 PM" },
-    { movie: "movie1", theatre: "theatre1", date: "2024-11-14", time: "5:00 PM" },
-    { movie: "movie2", theatre: "theatre1", date: "2024-11-14", time: "3:00 PM" },
-    // Add more mock showtimes as needed
-  ];
-
-  // Fetch data (replace with actual API calls)
+  // Fetch movies from API 
   useEffect(() => {
-    setMovies(mockMovies);
-    setTheatres(mockTheatres);
+    AppAPI.get("movies")
+      .then((response) => {
+        const apiOptions = response.map((movie) => ({
+          value: movie.id,
+          label: movie.title,
+        }));
+        const options = [{ value: "", label: "Any Movie "}, ...apiOptions];
+        setMovies(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching movies:", error);
+      })
   }, []);
 
-  const formatDateToLocal = (date) => {
-    return date.toLocaleDateString('en-CA');
-  }
+  // Fetch theatres from API
+  useEffect(() => {
+    AppAPI.get("theatres")
+      .then((response) => {
+        const apiOptions = response.map((theatre) => ({
+          value: theatre.id,
+          label: theatre.name,
+        }));
+        const options = [{ value: "", label: "Any Theatre" }, ...apiOptions];
+        setTheatres(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching theatres:", error);
+      });
+  }, []);
 
-  // Filter showtimes based on selected criteria
-  const filteredShowtimes = useMemo(() => {
-    const formattedDate = formatDateToLocal(selectedDate);
-    return mockShowtimes.filter(
-      (showtime) =>
-        showtime.date === formattedDate &&
-      (!selectedTheatreState || showtime.theatre === selectedTheatreState) &&
-      (!selectedMovieState || showtime.movie === selectedMovieState)
-    )
-  }, [selectedDate, selectedMovieState, selectedTheatreState])
+  // Fetch showtimes from the backend API
+  useEffect(() => {
+    console.log(selectedDate)
+    console.log(selectedMovieState)
+    console.log(selectedTheatreState)
+    if(selectedDate) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+
+      const params = {
+        date: formattedDate,
+      };
+
+      if(selectedMovieState) {
+        params.movieId = selectedMovieState;
+      }
+
+      if(selectedTheatreState) {
+        params.theatreId = selectedTheatreState;
+      }
+      
+      console.log(params)
+
+      AppAPI.get("showtimes", params)
+        .then((response) => {
+          const formattedShowtimes = response.map((showtime) => ({
+            id: showtime.id,
+            date: new Date(showtime.dateAndTime).toLocaleDateString(),
+            time: new Date(showtime.dateAndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
+            movieTitle: showtime.movieTitle,
+            theatreName: showtime.theatreName,
+            earlyRelease: showtime.earlyRelease,
+          }));
+          setShowtimes(formattedShowtimes);
+        })
+        .catch((error) => {
+          console.error("Error fetching showtimes:", error);
+        });
+    }
+  }, [selectedDate, selectedMovieState, selectedTheatreState]);
 
   // When setting initial state based on data passed from Homepage
   useEffect(() => {
@@ -68,11 +98,6 @@ function ShowtimesPage() {
       setSelectedTheatreState(selectedTheatre.value);
     }
   }, [selectedMovie, selectedTheatre]);
-
-  // Update showtimes based on selected movie, theatre, and date
-  useEffect(() => {
-    setShowtimes(filteredShowtimes);
-  }, [filteredShowtimes]);
 
   // Helper to find label for selected value
   const getLabel = (options, value) => options.find((option) => option.value === value)?.label || "Select an option";
@@ -139,16 +164,16 @@ function ShowtimesPage() {
           </h3>
           <ul className="space-y-2 mt-4">
             {showtimes.length > 0 ? (
-              showtimes.map((showtime, index) => (
+              showtimes.map((showtime) => (
                 <Link
-                  key={index}
+                  key={showtime.id}
                   to={'/AvailableSeats'}
-                  state={{showtime}}
+                  state={{ showtime }}
                   className="block p-4 bg-white border rounded-lg shadow-lg hover:bg-acmeBlue-lighter"
                 >
-                  <div className='font-semibold text-lg'>{mockMovies.find(movie => movie.value === showtime.movie)?.label}</div>
+                  <div className='font-semibold text-lg'>{showtime.movieTitle}</div>
                   <div>{showtime.date} - {showtime.time}</div>
-                  <div className='italic'>{mockTheatres.find(theatre => theatre.value === showtime.theatre)?.label}</div>
+                  <div className='italic'>{showtime.theatreName}</div>
                 </Link>
               ))
             ) : (

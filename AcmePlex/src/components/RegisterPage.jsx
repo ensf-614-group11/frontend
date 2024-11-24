@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AppAPI from "./AppAPI";
 
 function RegisterPage({ onSwitch }) {
   const [firstName, setFirstName] = useState("");
@@ -8,13 +9,43 @@ function RegisterPage({ onSwitch }) {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
+  const [error, setError] = useState("");  // To hold any errors
+  const [loading, setLoading] = useState(false);  // To show loading state
 
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Add registration logic here (API call)
     console.log("Register form submitted: ", {firstName, lastName, email, password, cardNumber, expiryDate, cvv})
+
+    setLoading(true);
+    setError(""); // Reset error state
+
+    // Collecting the form data
+    const registrationData = {
+      firstName,
+      lastName,
+      email,
+      password,
+      cardNumber,
+      expiryDate,
+      cvv
+    };
+
+    try {
+      const response = await AppAPI.register(registrationData, "defaultRegistration");
+
+      console.log("Registration success:", response);
+      // If registration is successful, you could redirect the user or show a success message.
+      // Optionally, store user info or token in localStorage or state.
+      // localStorage.setItem("authToken", response.data.token); // Example if a token is returned
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setError("Error during registration. Please try again later."); // Display error to user
+    } finally {
+      setLoading(false); // Stop loading state
+    }
   }
 
   return (

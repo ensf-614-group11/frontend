@@ -1,28 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Select from "react-select";
 import ContainerMain from './ContainerMain';
+import AppAPI from './AppAPI';
 
 function Homepage() {
 
   const [movie, setMovie] = useState("");
+  const [movieOptions, setMovieOptions] = useState([]);
   const [theatre, setTheatre] = useState("");
+  const [theatreOptions, setTheatreOptions] = useState([]);
 
   //replace with APR call to retrieve movies in database
-  const movies = [
-    { value: "", label: "Any Movie" },
-    { value: "movie1", label: "Movie 1" },
-    { value: "movie2", label: "Movie 2" },
-    { value: "movie3", label: "Movie 3" },
-  ];
+  // const movies = [
+  //   { value: "", label: "Any Movie" },
+  //   { value: "movie1", label: "Movie 1" },
+  //   { value: "movie2", label: "Movie 2" },
+  //   { value: "movie3", label: "Movie 3" },
+  // ];
 
-  //replace with API call to retrieve theatres in database
-  const theatres = [
-    { value: "", label: "Any Theatre"},
-    { value: "theatre1", label: "Theatre 1" },
-    { value: "theatre2", label: "Theatre 2" },
-    { value: "theatre3", label: "Theatre 3" },
-  ]
+  // //replace with API call to retrieve theatres in database
+  // const theatres = [
+  //   { value: "", label: "Any Theatre"},
+  //   { value: "theatre1", label: "Theatre 1" },
+  //   { value: "theatre2", label: "Theatre 2" },
+  //   { value: "theatre3", label: "Theatre 3" },
+  // ]
+
+  // Fetch movies from API
+  useEffect(() => {
+    AppAPI.get("movies")
+      .then((response) => {
+        const apiOptions = response.map((movie) => ({
+          value: movie.id,
+          label: movie.title,
+        }));
+
+        console.log(apiOptions);
+
+        const options = [{ value: "", label: "Any Movie"}, ...apiOptions];
+        setMovieOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching movies:", error);
+      })
+  }, [])
+
+  // Fetch theatres from API
+  useEffect(() => {
+    AppAPI.get("theatres")
+      .then((response) => {
+      const apiOptions = response.map((theatre) => ({
+        value: theatre.id,
+        label: theatre.name,
+      }));
+      
+      const options = [{ value: "", label: "Any Theatre"}, ...apiOptions]
+      setTheatreOptions(options);
+      
+      })
+      .catch((error) => {
+        console.error("Error fetching user info:", error);
+      })
+  }, [])
 
   const handleMovieSelect = (selectedOption) => {
     setMovie(selectedOption)
@@ -44,10 +84,11 @@ function Homepage() {
         <label htmlFor="search-movies" className="block text-neutral-700">Search Movies</label>
         <Select
           id="search-movies"
-          options={movies}
+          options={movieOptions}
           onChange={handleMovieSelect}
-          value={movies.find((item) => item.value === movie)}
+          value={movieOptions.find((item) => item.value === movie)}
           className="w-full pb-2 mt-1 focus:outline-none focus:ring-2 focus:ring-acmeBlue-lighter"
+          isSearchable
         />
       </div>
 
@@ -57,9 +98,9 @@ function Homepage() {
           id="select-theatre"
           className='w-full pb-2 mt-1 focus:outline-none focus:ring-2 focus:ring-acmeBlue-lighter'
           placeholder="Select theatre"
-          options={theatres}
+          options={theatreOptions}
           onChange={handleTheatreSelect}
-          value={theatres.find((item) => item.value === theatre)}
+          value={theatreOptions.find((item) => item.value === theatre)}
         />
       </div>
 
