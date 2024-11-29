@@ -278,6 +278,7 @@ function RegisterPage({ onSwitch }) {
           </div>
         </div>
       </div>
+      <p className="mt-5">Note: You will be charged $20 automatically upon registration.</p>
       <button
         type="submit"
         className="w-full p-3 mt-6 bg-acmeYellow text-white font-bold rounded-lg shadow-md hover:bg-acmeYellow-dark"

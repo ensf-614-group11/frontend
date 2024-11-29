@@ -82,7 +82,13 @@ function Header() {
             </button>
           </>
         ) : (
-          <Link to="/Login" className="text-acmeBlue hover:underline hover:text-acmeBlue-light">Login</Link>
+          <Link 
+            to="/Login" 
+            state={{ isLogin: true }}
+            className="text-acmeBlue hover:underline hover:text-acmeBlue-light"
+          >
+            Login
+          </Link>
         )}
       </div>
     </header>

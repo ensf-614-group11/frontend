@@ -108,7 +108,7 @@ function AvailableSeatsPage() {
             </div>
             {/* Seat Selection Grid */}
             <div className="grid grid-cols-8 gap-2">
-              {seats.map((seat) => (
+              {seats.map((seat, index) => (
                 <button
                   key={seat.seatId}
                   className={`w-10 h-10 text-center rounded-lg ${
@@ -123,7 +123,7 @@ function AvailableSeatsPage() {
                   onClick={() => seat.available && toggleSeatSelection(seat.seatId)}
                   disabled={!seat.available || showtime?.earlyRelease && !canSelectSeats}
                 >
-                  {seat.seatId}
+                  {index + 1}
                 </button>
               ))}
             </div>
