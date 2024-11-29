@@ -10,16 +10,16 @@ function AvailableSeatsPage() {
   const [seats, setSeats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [earlyReleaseSeatsTaken, setEarlyReleaseSeatsTaken] = useState(0);
 
-  console.log("state received:", state)
-
-  const mockTicketPrice = 15;
+  const ticketPrice = 15;
 
   useEffect(() => {
     if(showtime?.id) {
       const fetchSeats = async () => {
         try {
           const seatData = await AppAPI.get(`availableSeats/${showtime.id}`);
+          console.log('Fetched seat data:', seatData)
           setSeats(seatData);
         } catch (error) {
           setError("Failed to load seat availability:", error);
@@ -32,9 +32,26 @@ function AvailableSeatsPage() {
     }
   }, [showtime?.id])
 
+  useEffect(() => {
+    if(showtime?.earlyRelease && seats.length > 0) {
+      const soldSeats = seats.filter((seat) => !seat.available).length;
+      setEarlyReleaseSeatsTaken(soldSeats);
+      // console.log(earlyReleaseSeatsTaken);
+    }
+  }, [showtime?.earlyRelease, seats])
+
+  const maxEarlyReleaseSeats = Math.ceil(seats.filter(seat => seat.available).length * 0.1)
+
 
   // Toggle seat selection
   const toggleSeatSelection = (seatID) => {
+    if (
+      showtime?.earlyRelease && 
+      selectedSeats.length >= maxEarlyReleaseSeats
+    ) {
+      return;
+    }
+
     setSelectedSeats((prev) => 
       prev.includes(seatID) ? prev.filter((id) => id !== seatID) : [...prev, seatID]);
   }
@@ -48,6 +65,10 @@ function AvailableSeatsPage() {
       year: 'numeric',
     }).format(date)
   }
+
+  const canSelectSeats = !showtime?.earlyRelease || earlyReleaseSeatsTaken + selectedSeats.length < maxEarlyReleaseSeats
+
+  const totalPrice = selectedSeats.length * ticketPrice;
 
   return (
     <ContainerMain>
@@ -65,6 +86,13 @@ function AvailableSeatsPage() {
           <span className="text-acmeYellow-dark">{formatDateLong(showtime?.date) || "Date"}</span> at{" "} 
           <span className="text-acmeYellow-dark">{showtime?.time || "Time"}</span>
         </h2>
+
+        {showtime?.earlyRelease && earlyReleaseSeatsTaken + selectedSeats.length >= maxEarlyReleaseSeats && (
+          <div className="text-red-500 text-center">
+            All early release seats have been purchased. Please select a different movie.
+          </div>
+
+        )}
 
         {loading ? (
           <div className="text-center text-lg">Loading seat availability...</div>
@@ -84,14 +112,16 @@ function AvailableSeatsPage() {
                 <button
                   key={seat.seatId}
                   className={`w-10 h-10 text-center rounded-lg ${
-                    seat.available
+                    earlyReleaseSeatsTaken + selectedSeats.length >= maxEarlyReleaseSeats
+                    ? "bg-gray-300 cursor-not-allowed hover:bg-gray-300"
+                    : seat.available
                       ? selectedSeats.includes(seat.seatId)
                         ? "bg-acmeYellow-dark text-white"
                         : "bg-white border border-neutral-300 hover:bg-acmeYellowlight"
                       : "bg-gray-300 cursor-not-allowed"
                   }`}
                   onClick={() => seat.available && toggleSeatSelection(seat.seatId)}
-                  disabled={!seat.available}
+                  disabled={!seat.available || showtime?.earlyRelease && !canSelectSeats}
                 >
                   {seat.seatId}
                 </button>
@@ -112,6 +142,13 @@ function AvailableSeatsPage() {
           </div>
         )}
 
+        {showtime?.earlyRelease && earlyReleaseSeatsTaken + selectedSeats.length >= maxEarlyReleaseSeats && (
+          <div className="text-red-500 text-center">
+            All early release seats have been purchased. Please select a different movie.
+          </div>
+
+        )}
+
         {/* Selected Seats Summary */}
         {selectedSeats.length > 0 && (
           <div>
@@ -120,11 +157,16 @@ function AvailableSeatsPage() {
           </div>
         )}
 
+        {/* Total Price Display */}
+        <div className="text-center text-xl font-semibold mt-4">
+          Total Price: ${totalPrice}
+        </div>
+
         {/* Action Buttons */}
         <div className="space-y-4">
           <Link
             to="/Payment"
-            state={{selectedSeats, ticketPrice: mockTicketPrice}}
+            state={{showtime, selectedSeats, ticketPrice}}
           >
             <button
               className="w-full p-4 bg-acmeYellow text-white rounded-lg font-bold shadow-lg hover:bg-acmeYellow-dark"

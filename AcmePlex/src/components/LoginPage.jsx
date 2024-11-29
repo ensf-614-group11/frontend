@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppAPI from "./AppAPI";
 
 function LoginPage({ onSwitch }) {
@@ -7,34 +8,35 @@ function LoginPage({ onSwitch }) {
   const [error, setError] = useState(""); 
   const [loading, setLoading] = useState(false); 
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login for submitted", {email, password});
     setLoading(true);
     setError("");
-
-    // const loginData = {
-    //   email,
-    //   password,
-    // };
 
     try {
       const response = await AppAPI.post(
         "auth/login",
-        { email, password },
-        {},
-        "defaultLogin"
+        { email, password }
       );
 
-      console.log("Login success:", response);
-      // You can store the token or user info if needed
-      // For example, save the JWT token in localStorage or cookies
-      localStorage.setItem("authToken", response.data.token); // Example if the response contains a token
+      if (response.success) {
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("email", response.data.email)
+
+        alert(localStorage.getItem("authToken") + localStorage.getItem("email"))
+
+        navigate("/");
+      } else {
+        setError("Invalid email or password. Please try again.")
+      }
+
     } catch (error) {
       console.error("Login failed:", error)
-      setError("Invalid email or password"); // Set error message for UI
+      setError("An error occured. Please try again later."); 
     } finally {
-      setLoading(false) // stop loading state
+      setLoading(false) 
     }
   };
 
@@ -70,6 +72,9 @@ function LoginPage({ onSwitch }) {
           />
         </div>
       </div>
+      {error && (
+        <p className="text-red-500 text-sm mt-2">{error}</p>
+      )}
       <button
         type="submit"
         className="w-full p-3 mt-6 bg-acmeYellow text-white font-bold rounded-lg shadow-md hover:bg-acmeYellow-dark"

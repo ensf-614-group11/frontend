@@ -18,9 +18,16 @@ function LoginRegister() {
     <div>
       <Header />
       <ContainerMain>
-        <h2 className="text-2xl font-bold text-center mb-6">
+        <h2 className="text-acmeYellow text-2xl font-bold text-center mb-6">
           {isLogin ? "Login" : "Register"}
         </h2>
+        {!isLogin && (
+          <div className="text-left">
+            <p>Register to recieve movie news before public announcements and the ability to purchase movie tickets before public realeases.</p>
+            <p>Upon registration, you will be charged $20. This will be renewed annually.</p>  
+          </div>
+          
+        )}
         {isLogin ? (
           <LoginPage onSwitch={toggleForm} />
         ) : (

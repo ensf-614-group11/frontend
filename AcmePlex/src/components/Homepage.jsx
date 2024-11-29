@@ -11,22 +11,6 @@ function Homepage() {
   const [theatre, setTheatre] = useState("");
   const [theatreOptions, setTheatreOptions] = useState([]);
 
-  //replace with APR call to retrieve movies in database
-  // const movies = [
-  //   { value: "", label: "Any Movie" },
-  //   { value: "movie1", label: "Movie 1" },
-  //   { value: "movie2", label: "Movie 2" },
-  //   { value: "movie3", label: "Movie 3" },
-  // ];
-
-  // //replace with API call to retrieve theatres in database
-  // const theatres = [
-  //   { value: "", label: "Any Theatre"},
-  //   { value: "theatre1", label: "Theatre 1" },
-  //   { value: "theatre2", label: "Theatre 2" },
-  //   { value: "theatre3", label: "Theatre 3" },
-  // ]
-
   // Fetch movies from API
   useEffect(() => {
     AppAPI.get("movies")
@@ -72,6 +56,8 @@ function Homepage() {
     setTheatre(selectedOption)
   }
 
+  const isLoggedIn = Boolean(localStorage.getItem("authToken"));
+
   return(
     <ContainerMain>
       <img 
@@ -112,11 +98,13 @@ function Homepage() {
 
       <div className='border-t border-dotted border-neutral-300 my-4'></div>
 
+      {!isLoggedIn && (
       <Link to="/login" state={{ isLogin: false }}>
-        <button className='w-full bg-acmeBlue text-neutral-100 rounded-lg p-2 mt-4 hover:bg-acmeBlue-lighter focus:outline-none focus:ring-2 focus:ring-neutral-300'>
-          Register for Premium
-        </button>
-      </Link>
+      <button className='w-full bg-acmeBlue text-neutral-100 rounded-lg p-2 mt-4 hover:bg-acmeBlue-lighter focus:outline-none focus:ring-2 focus:ring-neutral-300'>
+        Register for Premium
+      </button>
+    </Link>
+      )}
 
       <Link to="/CancelTickets">
         <button className='w-full bg-acmeBlue text-neutral-100 rounded-lg p-2 mt-4 hover:bg-acmeBlue-lighter focus:outline-none focus:ring-2 focus:ring-neutral-300'>

@@ -17,6 +17,9 @@ function ShowtimesPage() {
   const [theatres, setTheatres] = useState([]); 
   const [showtimes, setShowtimes] = useState([]); 
 
+  const isLoggedIn = Boolean(localStorage.getItem("authToken"));
+  console.log(localStorage.getItem("authToken"))
+
   // Fetch movies from API 
   useEffect(() => {
     AppAPI.get("movies")
@@ -61,25 +64,22 @@ function ShowtimesPage() {
         date: formattedDate,
       };
 
-      if(selectedMovieState) {
-        params.movieId = selectedMovieState;
-      }
-
-      if(selectedTheatreState) {
-        params.theatreId = selectedTheatreState;
-      }
+      if(selectedMovieState) {params.movieId = selectedMovieState}
+      if(selectedTheatreState) {params.theatreId = selectedTheatreState}
       
       console.log(params)
 
       AppAPI.get("showtimes", params)
         .then((response) => {
-          const formattedShowtimes = response.map((showtime) => ({
-            id: showtime.id,
-            date: new Date(showtime.dateAndTime).toLocaleDateString(),
-            time: new Date(showtime.dateAndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
-            movieTitle: showtime.movieTitle,
-            theatreName: showtime.theatreName,
-            earlyRelease: showtime.earlyRelease,
+          const formattedShowtimes = response
+            .filter((showtime) => isLoggedIn || !showtime.earlyRelease)
+            .map((showtime) => ({
+              id: showtime.id,
+              date: new Date(showtime.dateAndTime).toLocaleDateString(),
+              time: new Date(showtime.dateAndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'}),
+              movieTitle: showtime.movieTitle,
+              theatreName: showtime.theatreName,
+              earlyRelease: showtime.earlyRelease,
           }));
           setShowtimes(formattedShowtimes);
         })
@@ -169,11 +169,19 @@ function ShowtimesPage() {
                   key={showtime.id}
                   to={'/AvailableSeats'}
                   state={{ showtime }}
-                  className="block p-4 bg-white border rounded-lg shadow-lg hover:bg-acmeBlue-lighter"
+                  className={`block p-4 border rounded-lg shadow-lg ${
+                    showtime.earlyRelease && isLoggedIn
+                    ? "bg-acmeYellow-lighter hover:bg-acmeYellow"
+                    : "bg-white hover:bg-acmeBlue-lighter"}`}
                 >
                   <div className='font-semibold text-lg'>{showtime.movieTitle}</div>
                   <div>{showtime.date} - {showtime.time}</div>
                   <div className='italic'>{showtime.theatreName}</div>
+                  {showtime.earlyRelease && isLoggedIn && (
+                    <div className='mt-2 text-yellow-800 font-bold'>
+                      Early Release
+                    </div>
+                  )}
                 </Link>
               ))
             ) : (

@@ -1,93 +1,75 @@
 import { useState } from "react";
 import ContainerMain from "./ContainerMain";
+import AppAPI from "./AppAPI";
 
 function CancelTickets() {
-  const [purchaseID, setPurchaseID] = useState("");
+  const [ticketId, setTicketId] = useState("");
+  const [email, setEmail] = useState("");
   const [ticketDetails, setTicketDetails] = useState("");
   const [errroMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Mock Data for Ticket Details
-  const mockTicketData = {
-    "123456789": {
-      showName: "Avengers: Endgame",
-      showtime: "2024-11-25T19:00:00Z",
-      seat: "A12",
-      price: 20.0,
-      isCancellable: true,
-    },
+  const fetchTicketDetails = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setTicketDetails(null);
+
+    try {
+      const repsonse = await AppAPI.get("cancel-ticket/get", {
+          ticketId: ticketId
+      });
+
+      if(repsonse.success) {
+        setTicketDetails(repsonse.data.ticket)
+      } else {
+        setErrorMessage(repsonse.message || "Unable to retrieve ticket details.");
+      }
+    } catch (error) {
+      setErrorMessage(error.message || "Error retrieving ticket details.");
+    }
   };
 
-  const fetchTicketDetails = () => {
+  const CancelTicket = async () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // Mock fetching logic 
-    const ticket = mockTicketData[purchaseID];
-    if (ticket) {
-      if(new Date(ticket.showtime) - new Date() < 72 * 60 * 60 * 1000) {
-        // If within 72 hourss, mark as non-cancellable
-        setErrorMessage("Tickets can only be cancelled at least 72 hours before the showtime.")
+    try {
+      const route = ticketDetails.belongsToRegisteredUser
+        ? "cancel-ticket/post/registered"
+        : "cancel-ticket/post/ordinary";
+
+      const requestData = ticketDetails.belongsToRegisteredUser
+        ? { ticketId: ticketId }
+        : { ticketId: ticketId, email };
+
+      const response = await AppAPI.post(route, requestData);
+
+      if(response.success) {
+        setSuccessMessage(response.message || "Ticket cancelled successfully.");
         setTicketDetails(null);
       } else {
-        setTicketDetails(ticket);
-      }
-    } else {
-      setErrorMessage("Unable to find ticket details. Please check your Purchase ID.")
-      setTicketDetails(null)
+        setErrorMessage(response.message || "Unable to cancel ticket.");
+      } 
+    } catch (error) {
+      setErrorMessage(error.message || "Error cancelling ticket.");
     }
+  }; 
 
-    // Replace the above with an actual API call in the future
-    // Example:
-    // fetch(`/api/tickets/${purchaseID}`)
-    //   .then((response) => {
-    //     if (!response.ok) throw new Error("Unable to find ticket details.");
-    //     return response.json();
-    //   })
-    //   .then(setTicketDetails)
-    //   .catch((error) => setErrorMessage(error.message));
-  }
-
-  const CancelTicket = () => {
-    // Mock cancel logic
-    if(ticketDetails.isCancellable) {
-      setSuccessMessage(`Your ticket for "${ticketDetails.showName}" has been cencelled. A confirmation email has been sent. You have received a credit of $${(ticketDetails.price * 0.85).toFixed(2)}.`)
-      setTicketDetails(null);
-    } else {
-      setErrorMessage("This ticket is no longer cancellable.")
-    }
-
-    // Replace the above with an actual API call in the future
-    // Example:
-    // fetch(`/api/tickets/cancel`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ purchaseID }),
-    // })
-    //   .then((response) => {
-    //     if (!response.ok) throw new Error("Unable to cancel ticket.");
-    //     return response.json();
-    //   })
-    //   .then((data) =>
-    //     setSuccessMessage(`Your ticket has been cancelled. Credit: $${data.creditAmount}.`)
-    //   )
-    //   .catch((error) => setErrorMessage(error.message));
-  }
 
   return(
     <ContainerMain>
       <h1>Cancel Tickets</h1>
       <div className="space-y-4">
         <label htmlFor="purchaseID" className="block font-medium">
-          Enter your Purchase ID:
+          Enter your Ticket ID:
         </label>
         <input 
           type="text"
-          id="purchaseID"
-          value={purchaseID}
-          onChange={(e) => setPurchaseID(e.target.value)}
+          id="ticketID"
+          value={ticketId}
+          onChange={(e) => setTicketId(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg"
-          placeholder="Enter Purchase ID"
+          placeholder="Enter Ticket ID"
         />
         <button 
           onClick={fetchTicketDetails} 
@@ -103,16 +85,37 @@ function CancelTickets() {
       {ticketDetails && (
         <div className="mt-6 border border-gray-300 rounded-lg p-4">
           <h2 className="font-bold">Ticket Details:</h2>
-          <p><strong>Show:</strong> {ticketDetails.showName}</p>
-          <p><strong>Showtime:</strong> {ticketDetails.showtime}</p>
-          <p><strong>Seat:</strong> {ticketDetails.seat}</p>
-          <p><strong>Price:</strong> {ticketDetails.price}</p>
-          <button
-            onClick={CancelTicket}
-            className="mt-4 bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600"
-          >
-            Cancel Ticket
-          </button>
+          <p><strong>Show:</strong> {ticketDetails.showtime.movieTitle}</p>
+          <p><strong>Theatre:</strong> {ticketDetails.showtime.theatre}</p>
+          <p><strong>Showtime:</strong> {new Date(ticketDetails.showtime.dateAndTime).toLocaleString()}</p>
+          {ticketDetails.belongsToRegisteredUser ? (
+            <button
+              onClick={CancelTicket}
+              className="mt-4 bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600"
+            >
+              Cancel Ticket
+            </button>
+          ) : (
+            <>
+              <label htmlFor="email" className="block mt-4 font-medium">
+                Enter your email:
+              </label>
+              <input 
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+                placeholder="Enter Email"
+              />
+              <button
+                onClick={CancelTicket}
+                className="mt-4 bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600"
+              >
+                Cancel Ticket
+              </button>
+            </>
+          )}
         </div>
       )}
     </ContainerMain>

@@ -36,20 +36,29 @@ class AppAPI {
       throw new Error(`GET request failed: ${response.status} ${response.statusText}`);
     }
 
+    // console.log(response)
+
     return await response.json();
   }
 
+  // PUT method
+  static put = async (route, data, queryParams = {}) => {
+    const response = await fetch(AppAPI.url(route, queryParams), {
+      method: "PUT",
+      headers: AppAPI.getDefaultHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if(!response.ok) {
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.message || `PUT request failed: ${response.statusText}`)
+    }
+
+    return await response.json()
+  }
+
   // POST method
-  static post = async (route, data, queryParams = {}, strategyType = "defaultLogin") => {
-    queryParams.strategyType = strategyType;
-
-    console.log("Sending POST request with data:", data, "and queryParams:", queryParams);
-
-    // const requestBody = {
-    //   ...data,
-    //   strategyType: loginStrategy,  // Add strategyType to the request body
-    // };
-    // console.log("Sending POST request with data:", requestBody);
+  static post = async (route, data, queryParams = {}) => {
 
     const response = await fetch(AppAPI.url(route, queryParams), {
       method: "POST",
@@ -58,17 +67,16 @@ class AppAPI {
     });
 
     if(!response.ok) {
-      throw new Error(`POST request failed: ${response.status} ${response.statusText}`)
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.message || `POST request failed: ${response.statusText}`);
     }
-
-    console.log(response)
 
     return await response.json();
   }
 
     // Register method for registration endpoint
-    static register = async (data, strategyType = "defaultRegistration") => {
-      return await AppAPI.post("auth/register", data, {}, strategyType);
+    static register = async (data) => {
+      return await AppAPI.post("auth/register", data);
     };
 }
 
