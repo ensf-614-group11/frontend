@@ -42,7 +42,6 @@ function PaymentPage() {
           const { id, firstName, lastName, email} = response.data;
           setUserId(id)
           const { street, city, province, postalCode, country } = response.data.savedBillingAddress || {};
-          // const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
 
           const paymentResponse = await AppAPI.get("user/profile/payment-type/list");
           console.log(paymentResponse.data)
@@ -52,13 +51,6 @@ function PaymentPage() {
           )
           
           const { cardHolderName, cardNumber, expiryDate } = activePayment;
-
-          // if(activePayment) {
-          //   const { cardHolderName, cardNumber, expiryDate } = activePayment;
-          //   // setPaymentInfo({cardHolderName, cardNumber, expiryDate});
-          // } else {
-          //   console.log("No active payment types found.")
-          // }
 
           setFormData({firstName, lastName, email, street, city, province, postalCode, country, cardHolderName, creditCardNumber: cardNumber, expiryDate});
         }
@@ -138,50 +130,48 @@ function PaymentPage() {
       return
     }
 
-    if (isLoggedIn) {
+    const paymentPromises = selectedSeats.map(async (seatId) => {
       const paymentData = {
-        amount: totalCost,
-        seatId: selectedSeats[0],
+        amount: totalCost / selectedSeats.length,
+        seatId: seatId,
         showtimeId: showtime.id,
         userId: userId,
         cvv: formData.cvv
-      }
-
-      console.log(paymentData)
+      };
 
       try {
-        await AppAPI.post("payment/registered", paymentData)
-        navigate("/Confirmation", { state: { totalCost: totalCost, selectedSeats, showtime,  } });
-      } catch (error) {
-        console.error("Payment failed", error)
-        alert("Payment failed, please try again.")
-      }
-      return
-    } else {
-      if (!validateForm()) {
-        return; // If validation fails, do not proceed with payment
-      }
+        if (isLoggedIn) {
+          await AppAPI.post("payment/registered", paymentData)
+        } else {
+          if (!validateForm()) {
+            return; // If validation fails, do not proceed with payment
+          };
+          
+          const paymentDataUnregistered = {
+            ...formData,
+            amount: totalCost / selectedSeats.length,
+            countryCode: "CA",
+            showtimeId: showtime.id,
+            seatId: seatId,
+          };
 
-      const paymentData = {
-        ...formData,
-        amount: totalCost,
-        countryCode: "CA", // Hardcoded for now
-        showtimeId: showtime.id,
-        seatId: selectedSeats[0]
-      }
-  
-      delete paymentData.cardHolderName;
-      delete paymentData.creditCode;
-  
-      console.log(paymentData)
-  
-      try {
-        await AppAPI.post("payment/unregistered", paymentData)
-        navigate("/Confirmation", { state: { totalCost: totalCost, selectedSeats, showtime,  } });
+          delete paymentDataUnregistered.cardHolderName;
+          delete paymentDataUnregistered.creditCode;
+
+          await AppAPI.post("payment/unregistered", paymentDataUnregistered);
+        }
       } catch (error) {
-        console.error("Payment failed", error)
-        alert("Payment failed, please try again.")
+        console.error("Payment failed for seat ID", seatId, error);
+        alert("Payment failed for seat " + seatId + ", please try again.")
       }
+    })
+
+    try {
+      await Promise.all(paymentPromises);
+      navigate("/Confirmation", { state: {totalCost, selectedSeats, showtime}});
+    } catch (error) {
+      console.error("Error processing payments", error);
+      alert("An error ocurred while processing your payments. Please try again.")
     }
   };
 

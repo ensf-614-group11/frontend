@@ -20,7 +20,12 @@ function CancelTickets() {
       });
 
       if(repsonse.success) {
-        setTicketDetails(repsonse.data.ticket)
+        const ticket = repsonse.data.ticket;
+        if (ticket.status === "Cancelled") {
+          setErrorMessage("This ticket has already been cancelled.");
+        } else {
+          setTicketDetails(ticket);
+        }
       } else {
         setErrorMessage(repsonse.message || "Unable to retrieve ticket details.");
       }
