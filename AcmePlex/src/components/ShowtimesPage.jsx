@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ContainerMain from "./ContainerMain";
 import Select from 'react-select';
@@ -58,10 +58,8 @@ function ShowtimesPage() {
     console.log(selectedMovieState)
     console.log(selectedTheatreState)
     if(selectedDate) {
-      const adjustedDate = new Date(selectedDate);
-      adjustedDate.setDate(adjustedDate.getDate() - 1);
 
-      const formattedDate = adjustedDate.toISOString().split("T")[0];
+      const formattedDate = selectedDate.toISOString().split("T")[0];
 
       const params = {
         date: formattedDate,

@@ -97,14 +97,28 @@ function ProfilePage() {
   const handleSavePaymentInfo = async () => {
     try {
       const paymentInfoToSend = {
-        ...paymentInfo,
         type: "CREDIT_CARD",
         countryCode: "CA",
+        cardholderName: paymentInfo.cardHolderName,
+        cardNumber: paymentInfo.cardNumber,
+        expirationDate: paymentInfo.expiryDate,
+        cvv: paymentInfo.cvv,
       }
       console.log(paymentInfoToSend)
-      await AppAPI.post("user/profile/payment-type", paymentInfoToSend);
-      setIsEditingPaymentInfo(false);
-      console.log("Payment info saved");
+
+      const response = await AppAPI.put("user/profile/payment-type/manage", paymentInfoToSend);
+
+      if(response.success) {
+        setIsEditingPaymentInfo(false);
+        setPaymentInfo({
+          cardHolderName: response.data.cardHolderName,
+          cardNumber: response.data.cardNumber,
+          expiryDate:response.data.expiryDate,
+          cvv: "", // reset cvv for security
+        })
+      } else {
+        console.error("Failed to update payment info:", response.data.message);
+      }
     } catch (error) {
       console.error("Error saving payment info:", error);
     }
@@ -313,7 +327,7 @@ function ProfilePage() {
           <div className="flex space-x-4">
             <div className="flex-1">
               <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
-                Expiry Date (MM/YY)
+                Expiry Date (MMYY)
               </label>
               <input
                 type="text"
@@ -354,29 +368,6 @@ function ProfilePage() {
             </button>
           )}
         </div>
-
-        {/* Action Buttons */}
-        {/* <div className="mt-6 flex justify-end space-x-4">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-            onClick={handleEditClick}
-          >
-            {isEditing ? "Cancel" : "Edit"}
-          </button>
-          {isEditing && (
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded-lg"
-              onClick={() => {
-                handleSaveUserInfo();
-                handleSaveBillingAddress();
-                handleSavePaymentInfo();
-                setIsEditing(false);
-              }}
-            >
-              Save
-            </button>
-          )}
-        </div> */}
       </div>
 
       {/* Log Out Button */}
