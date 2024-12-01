@@ -34,12 +34,12 @@ Before you begin, ensure you have the following installed:
 
 Use the following command to clone the repository to your local machine:
 ```bash
-git clone https://github.com/your-organization/movie-ticket-reservation.git
+git clone [https://github.com/your-organization/movie-ticket-reservation.git](https://github.com/ensf-614-group11/frontend.git)
 ```
 
 Navigate to the project directory:
 ```bash
-cd movie-ticket-reservation
+cd frontend
 ```
 
 ### 2. Install Dependencies
@@ -53,10 +53,10 @@ npm install
 
 To start the application in development mode, run:
 ```bash
-npm start
+npm run dev
 ```
 
-This will launch the application in your default browser at [http://localhost:3000](http://localhost:3000).
+This will launch the application in your default browser at http://localhost:5173/
 
 If the browser does not open automatically, manually navigate to the above URL.
 
