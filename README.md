@@ -23,7 +23,10 @@ Before you begin, ensure you have the following installed:
      git --version
      ```
 
-3. **Code Editor (Optional)**:
+3. **ESLine VSCode Extension**
+   - Install the [ESLint VSCode Extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+4. **Code Editor (Optional)**:
    - Install a code editor like [Visual Studio Code](https://code.visualstudio.com/) for better development experience.
 
 ---
