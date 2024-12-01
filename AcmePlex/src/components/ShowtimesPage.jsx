@@ -58,7 +58,10 @@ function ShowtimesPage() {
     console.log(selectedMovieState)
     console.log(selectedTheatreState)
     if(selectedDate) {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const adjustedDate = new Date(selectedDate);
+      adjustedDate.setDate(adjustedDate.getDate() - 1);
+
+      const formattedDate = adjustedDate.toISOString().split("T")[0];
 
       const params = {
         date: formattedDate,

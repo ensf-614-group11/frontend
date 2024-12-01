@@ -37,15 +37,29 @@ function ProfilePage() {
       try {
         const token = localStorage.getItem("authToken");
         if(token) {
-          const response = await AppAPI.get("user/profile/get");
-          console.log(response.data)
-          const { firstName, lastName, email} = response.data;
-          const { street, city, province, postalCode, country } = response.data.savedBillingAddress || {};
-          const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
+          const userResponse = await AppAPI.get("user/profile/get");
+          console.log(userResponse.data);
+          const { firstName, lastName, email} = userResponse.data;
+          const { street, city, province, postalCode, country } = userResponse.data.savedBillingAddress || {};
+          // const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
 
           setUserDetails({firstName, lastName, email});
           setBillingAddress({street, city, province, postalCode, country})
-          setPaymentInfo({cardHolderName, cardNumber, expiryDate});
+          // setPaymentInfo({cardHolderName, cardNumber, expiryDate});
+
+          const paymentResponse = await AppAPI.get("user/profile/payment-type/list");
+          console.log(paymentResponse.data)
+
+          const activePayment = paymentResponse.data.find(
+            (payment) => payment.status === "Active"
+          )
+
+          if(activePayment) {
+            const { cardHolderName, cardNumber, expiryDate } = activePayment;
+            setPaymentInfo({cardHolderName, cardNumber, expiryDate});
+          } else {
+            console.log("No active payment types found.")
+          }
         }
       } catch (error) {
         console.error("Error fetching user data:", error);

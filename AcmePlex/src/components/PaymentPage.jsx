@@ -42,7 +42,23 @@ function PaymentPage() {
           const { id, firstName, lastName, email} = response.data;
           setUserId(id)
           const { street, city, province, postalCode, country } = response.data.savedBillingAddress || {};
-          const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
+          // const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
+
+          const paymentResponse = await AppAPI.get("user/profile/payment-type/list");
+          console.log(paymentResponse.data)
+
+          const activePayment = paymentResponse.data.find(
+            (payment) => payment.status === "Active"
+          )
+          
+          const { cardHolderName, cardNumber, expiryDate } = activePayment;
+
+          // if(activePayment) {
+          //   const { cardHolderName, cardNumber, expiryDate } = activePayment;
+          //   // setPaymentInfo({cardHolderName, cardNumber, expiryDate});
+          // } else {
+          //   console.log("No active payment types found.")
+          // }
 
           setFormData({firstName, lastName, email, street, city, province, postalCode, country, cardHolderName, creditCardNumber: cardNumber, expiryDate});
         }

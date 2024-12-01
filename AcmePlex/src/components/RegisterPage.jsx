@@ -69,7 +69,7 @@ function RegisterPage({ onSwitch }) {
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("email", response.data.email);
 
-        alert("Got token: ", localStorage.getItem("authToken"))
+        // alert("Got token: ", localStorage.getItem("authToken"))
 
         navigate("/")
       } else {

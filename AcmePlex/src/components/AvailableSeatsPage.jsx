@@ -153,7 +153,9 @@ function AvailableSeatsPage() {
         {selectedSeats.length > 0 && (
           <div>
             <h3 className="text-xl font-semibold">Selected Seats:</h3>
-            <p>{selectedSeats.join(", ")}</p>
+            <p>{selectedSeats
+                  .map(seatId => seats.findIndex(seat => seat.seatId === seatId) + 1)
+                  .join(", ")}</p>
           </div>
         )}
 

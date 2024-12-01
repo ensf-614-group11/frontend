@@ -25,7 +25,7 @@ function LoginPage({ onSwitch }) {
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("email", response.data.email)
 
-        alert(localStorage.getItem("authToken") + localStorage.getItem("email"))
+        // alert(localStorage.getItem("authToken") + localStorage.getItem("email"))
 
         navigate("/");
       } else {
