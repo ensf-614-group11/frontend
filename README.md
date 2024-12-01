@@ -34,7 +34,7 @@ Before you begin, ensure you have the following installed:
 
 Use the following command to clone the repository to your local machine:
 ```bash
-git clone [https://github.com/your-organization/movie-ticket-reservation.git](https://github.com/ensf-614-group11/frontend.git)
+git clone https://github.com/ensf-614-group11/frontend.git
 ```
 
 Navigate to the project directory:
@@ -71,28 +71,6 @@ Ensure that the routing works seamlessly in the application.
 
 ---
 
-## Additional Commands
-
-- **Build the Application**:
-  To create a production build of the application, run:
-  ```bash
-  npm run build
-  ```
-
-- **Run Tests**:
-  To execute tests (if available):
-  ```bash
-  npm test
-  ```
-
-- **Lint the Code**:
-  To check for linting issues:
-  ```bash
-  npm run lint
-  ```
-
----
-
 ## Troubleshooting
 
 1. **Common Errors**:
@@ -105,17 +83,17 @@ Ensure that the routing works seamlessly in the application.
 2. **Port Conflicts**:
    - If the development server fails to start due to port conflicts, specify a different port by running:
      ```bash
-     PORT=3001 npm start
+     PORT=3001 npm run dev
      ```
 
 3. **API Issues**:
-   - Ensure the backend API is running and accessible if the application relies on it.
+   - Ensure the backend API is running and accessible.
 
 ---
 
 ## Notes
 
-- This application assumes a backend API is running to provide movie, theater, and showtime data. Ensure the backend is set up and running if applicable.
+- This application assumes a backend API is running - you must be running the backend API at http://localhost:8080/. Ensure the backend is set up and running if applicable.
 - For any additional setup instructions, refer to the project documentation or contact the project maintainer.
 
 ---
@@ -128,5 +106,5 @@ If you would like to contribute to this project, please fork the repository and 
 
 ## Contact
 
-For questions or support, please contact the project maintainer at [support@acmeplex.com](mailto:support@acmeplex.com).
+For questions or support, please contact the the team members.
 
