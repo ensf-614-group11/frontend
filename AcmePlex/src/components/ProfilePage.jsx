@@ -30,6 +30,12 @@ function ProfilePage() {
   });
   const [isEditingPaymentInfo, setIsEditingPaymentInfo] = useState(false);
 
+  const [errorMessages, setErrorMessages] = useState({
+    userDetails: "",
+    billingAddress: "",
+    paymentInfo: "",
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,11 +47,9 @@ function ProfilePage() {
           console.log(userResponse.data);
           const { firstName, lastName, email} = userResponse.data;
           const { street, city, province, postalCode, country } = userResponse.data.savedBillingAddress || {};
-          // const { cardHolderName, cardNumber, expiryDate } = response.data.paymentTypes[0] || {};
 
           setUserDetails({firstName, lastName, email});
           setBillingAddress({street, city, province, postalCode, country})
-          // setPaymentInfo({cardHolderName, cardNumber, expiryDate});
 
           const paymentResponse = await AppAPI.get("user/profile/payment-type/list");
           console.log(paymentResponse.data)
@@ -67,17 +71,59 @@ function ProfilePage() {
     }
 
     fetchProfileData();
-  }, [])
+  }, []);
 
-  // const handleEditClick = () => {
-  //   setIsEditing(true);
-  // };
+  const validateUserDetails = () => {
+    if (!userDetails.firstName || !userDetails.lastName || !userDetails.email) {
+      return "Please fill in all fields.";
+    }
+    return "";
+  };
+
+  const validateBillingAddress = () => {
+    if (!billingAddress.street || !billingAddress.city || !billingAddress.postalCode || !billingAddress.province || !billingAddress.country) {
+      return "Please fill in all billing address fields.";
+    }
+    return "";
+  };
+
+  const validatePaymentInfo = () => {
+    if (!paymentInfo.cardHolderName || !paymentInfo.cardNumber || !paymentInfo.expiryDate || !paymentInfo.cvv) {
+      return "Please fill in all payment information fields.";
+    }
+
+    // Validate credit card number (16 digits)
+    const cardNumberRegex = /^\d{16}$/;
+    if (!cardNumberRegex.test(paymentInfo.cardNumber)) {
+      return "Credit card number must be 16 digits.";
+    }
+
+    // Validate expiry date (MM/YY format)
+    const expiryDateRegex = /^(0[1-9]|1[0-2])\d{2}$/;
+    if (!expiryDateRegex.test(paymentInfo.expiryDate)) {
+      return "Expiry date must be in MMYY format.";
+    }
+
+    // Validate CVV (3 or 4 digits)
+    const cvvRegex = /^\d{3,4}$/;
+    if (!cvvRegex.test(paymentInfo.cvv)) {
+      return "CVV must be 3 or 4 digits.";
+    }
+    return "";
+  };
 
   const handleSaveUserDetails = async () => {
+    const error = validateUserDetails();
+    if (error) {
+      setErrorMessages((prev) => ({...prev, userDetails: error}));
+      return;
+    }
+    
     try {
       await AppAPI.put("user/profile/update", userDetails);
       localStorage.setItem("firstName", userDetails.firstName)
       setIsEditingUserDetails(false);
+      setErrorMessages((prev) => ({ ...prev, userDetails: "" }));
       console.log("User Info saved");
     } catch (error) {
       console.error("Error saving user info:", error);
@@ -85,9 +131,15 @@ function ProfilePage() {
   }
 
   const handleSaveBillingAddress = async () => {
+    const error = validateBillingAddress();
+    if (error) {
+      setErrorMessages((prev) => ({...prev, billingAddress: error}));
+      return;
+    }
     try {
       await AppAPI.put("user/profile/billing-address", billingAddress);
       setIsEditingBillingAddress(false);
+      setErrorMessages((prev) => ({ ...prev, billingAddress: "" }));
       console.log("Billing address saved");
     } catch (error) {
       console.error("Error saving billing address:", error);
@@ -95,6 +147,11 @@ function ProfilePage() {
   }
 
   const handleSavePaymentInfo = async () => {
+    const error = validatePaymentInfo();
+    if (error) {
+      setErrorMessages((prev) => ({ ...prev, paymentInfo: error }));
+      return;
+    }
     try {
       const paymentInfoToSend = {
         type: "CREDIT_CARD",
@@ -116,6 +173,7 @@ function ProfilePage() {
           expiryDate:response.data.expiryDate,
           cvv: "", // reset cvv for security
         })
+        setErrorMessages((prev) => ({ ...prev, paymentInfo: "" }));
       } else {
         console.error("Failed to update payment info:", response.data.message);
       }
@@ -190,6 +248,9 @@ function ProfilePage() {
                 disabled={!isEditingUserDetails}
               />
             </div>
+            {errorMessages.userDetails && (
+              <p className="text-red-500 text-sm">{errorMessages.userDetails}</p>
+            )}
             {isEditingUserDetails ? (
               <button
                 onClick={handleSaveUserDetails}
@@ -278,6 +339,9 @@ function ProfilePage() {
               disabled={!isEditingBillingAddress}
             />
           </div>
+          {errorMessages.billingAddress && (
+            <p className="text-red-500 text-sm">{errorMessages.billingAddress}</p>
+          )}
           {isEditingBillingAddress ? (
             <button
             onClick={handleSaveBillingAddress}
@@ -352,6 +416,9 @@ function ProfilePage() {
               />
             </div>
           </div>
+          {errorMessages.paymentInfo && (
+            <p className="text-red-500 text-sm">{errorMessages.paymentInfo}</p>
+          )}
           {isEditingPaymentInfo ? (
             <button
               onClick={handleSavePaymentInfo}

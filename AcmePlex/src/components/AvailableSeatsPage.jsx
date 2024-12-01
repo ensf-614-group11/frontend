@@ -19,8 +19,13 @@ function AvailableSeatsPage() {
       const fetchSeats = async () => {
         try {
           const seatData = await AppAPI.get(`availableSeats/${showtime.id}`);
-          console.log('Fetched seat data:', seatData)
-          setSeats(seatData);
+          const enrichedSeats = seatData.map((seat, index) => ({
+            ...seat,
+            row: Math.floor(index / 8) + 1,
+            number: (index % 8) + 1,
+          }));
+          console.log('Fetched seat data:', enrichedSeats)
+          setSeats(enrichedSeats);
         } catch (error) {
           setError("Failed to load seat availability:", error);
         } finally {
@@ -70,6 +75,14 @@ function AvailableSeatsPage() {
 
   const totalPrice = selectedSeats.length * ticketPrice;
 
+  // Group seats by row
+  const seatsByRow = seats.reduce((rows, seat, index) => {
+    const rowIndex = Math.floor(index / 8);
+    if (!rows[rowIndex]) rows[rowIndex] = [];
+    rows[rowIndex].push(seat);
+    return rows;
+  }, []);
+
   return (
     <ContainerMain>
       <div className="space-y-6">
@@ -106,25 +119,43 @@ function AvailableSeatsPage() {
                 SCREEN
               </div>
             </div>
+            <div className="flex">
+              <div className="mr-2 font-bold text-acmeBlue-lighter">Row</div>
+              <div className="w-px h-6 bg-neutral-400 mx-2 mr-4"></div>
+              <div className="font-bold text-acmeBlue-lighter">Seats</div>
+            </div>
             {/* Seat Selection Grid */}
-            <div className="grid grid-cols-8 gap-2">
-              {seats.map((seat, index) => (
-                <button
-                  key={seat.seatId}
-                  className={`w-10 h-10 text-center rounded-lg ${
-                    earlyReleaseSeatsTaken + selectedSeats.length >= maxEarlyReleaseSeats
-                    ? "bg-gray-300 cursor-not-allowed hover:bg-gray-300"
-                    : seat.available
-                      ? selectedSeats.includes(seat.seatId)
-                        ? "bg-acmeYellow-dark text-white"
-                        : "bg-white border border-neutral-300 hover:bg-acmeYellowlight"
-                      : "bg-gray-300 cursor-not-allowed"
-                  }`}
-                  onClick={() => seat.available && toggleSeatSelection(seat.seatId)}
-                  disabled={!seat.available || showtime?.earlyRelease && !canSelectSeats}
-                >
-                  {index + 1}
-                </button>
+            <div className="space-y-2">
+              {seatsByRow.map((row, rowIndex) => (
+                <div key={`row-${rowIndex}`} className="flex items-center">
+                  {/* Row Label */}
+                  <div className="w-10 text-center font-bold">
+                    {rowIndex + 1}
+                  </div>
+                  {/* Vertical Line */}
+                  <div className="w-px h-6 bg-neutral-400 mx-2 mr-4"></div>
+                  {/* Seats in Row */}
+                  <div className="grid grid-cols-8 gap-2 flex-1">
+                    {row.map((seat, seatIndex) => (
+                      <button
+                      key={seat.seatId}
+                      className={`w-10 h-10 text-center rounded-lg ${
+                        earlyReleaseSeatsTaken + selectedSeats.length >= maxEarlyReleaseSeats
+                        ? "bg-gray-300 cursor-not-allowed hover:bg-gray-300"
+                        : seat.available
+                          ? selectedSeats.includes(seat.seatId)
+                            ? "bg-acmeYellow-dark text-white"
+                            : "bg-white border border-neutral-300 hover:bg-acmeYellowlight"
+                          : "bg-gray-300 cursor-not-allowed"
+                      }`}
+                      onClick={() => seat.available && toggleSeatSelection(seat.seatId)}
+                      disabled={!seat.available || showtime?.earlyRelease && !canSelectSeats}
+                    >
+                      {seatIndex + 1}
+                    </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             {/* Legend */}
@@ -153,9 +184,18 @@ function AvailableSeatsPage() {
         {selectedSeats.length > 0 && (
           <div>
             <h3 className="text-xl font-semibold">Selected Seats:</h3>
-            <p>{selectedSeats
-                  .map(seatId => seats.findIndex(seat => seat.seatId === seatId) + 1)
-                  .join(", ")}</p>
+            <div>
+              {selectedSeats
+                .map(seatId => {
+                  const seat = seats.find(seat => seat.seatId === seatId);
+                  return seat ? (
+                    <div key={seatId}>
+                      Row: {seat.row}, Seat: {seat.number}
+                    </div>
+                  ) : null;
+                })
+                .filter(Boolean)}
+            </div>
           </div>
         )}
 
