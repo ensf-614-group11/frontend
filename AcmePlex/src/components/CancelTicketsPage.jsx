@@ -6,7 +6,8 @@ function CancelTickets() {
   const [ticketId, setTicketId] = useState("");
   const [email, setEmail] = useState("");
   const [ticketDetails, setTicketDetails] = useState("");
-  const [errroMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessageNested, setErrorMessageNested] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const fetchTicketDetails = async () => {
@@ -21,6 +22,8 @@ function CancelTickets() {
 
       if(repsonse.success) {
         const ticket = repsonse.data.ticket;
+        console.log(repsonse.data.message)
+        setErrorMessageNested(repsonse.data.message)
         if (ticket.status === "Cancelled") {
           setErrorMessage("This ticket has already been cancelled.");
         } else {
@@ -84,7 +87,7 @@ function CancelTickets() {
         </button>
       </div>
 
-      {errroMessage && <p className="text-red-500 mt-4">{errroMessage}</p>}
+      {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
       {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
 
       {ticketDetails && (
@@ -93,10 +96,20 @@ function CancelTickets() {
           <p><strong>Show:</strong> {ticketDetails.showtime.movieTitle}</p>
           <p><strong>Theatre:</strong> {ticketDetails.showtime.theatre}</p>
           <p><strong>Showtime:</strong> {new Date(ticketDetails.showtime.dateAndTime).toLocaleString()}</p>
+          {(errorMessageNested === "Ticket cannot be cancelled as the showtime is within 72 hours.") && (
+            <p className="text-red-500 mt-4">
+              {errorMessageNested}
+            </p>
+          )}
           {ticketDetails.belongsToRegisteredUser ? (
             <button
               onClick={CancelTicket}
-              className="mt-4 bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600"
+              className={`mt-4 p-3 rounded-lg shadow-md ${
+                errorMessageNested === "Ticket cannot be cancelled as the showtime is within 72 hours."
+                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  : "bg-red-500 text-white hover:bg-red-600"
+              }`}
+              disabled={errorMessageNested === "Ticket cannot be cancelled as the showtime is within 72 hours."}
             >
               Cancel Ticket
             </button>
@@ -115,7 +128,12 @@ function CancelTickets() {
               />
               <button
                 onClick={CancelTicket}
-                className="mt-4 bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600"
+                className={`mt-4 p-3 rounded-lg shadow-md ${
+                  errorMessageNested === "Ticket cannot be cancelled as the showtime is within 72 hours."
+                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    : "bg-red-500 text-white hover:bg-red-600"
+                }`}
+                disabled={errorMessageNested === "Ticket cannot be cancelled as the showtime is within 72 hours."}
               >
                 Cancel Ticket
               </button>

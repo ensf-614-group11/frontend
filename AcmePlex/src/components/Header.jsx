@@ -40,8 +40,13 @@ function Header() {
     };
   }, []);
 
-  const handleLogout = () => {
-    // await AppAPI.post("auth/logout")// Add the API call to the logout
+  const handleLogout = async () => {
+    try {
+      const response = await AppAPI.post("auth/logout", {}, { responseType: "text" });
+      console.log(response); // Optional: Log the plain text response
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
     localStorage.removeItem("authToken");
     localStorage.removeItem("email");
     localStorage.removeItem("firstName");

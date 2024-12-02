@@ -24,9 +24,6 @@ function LoginPage({ onSwitch }) {
       if (response.success) {
         localStorage.setItem("authToken", response.data.token);
         localStorage.setItem("email", response.data.email)
-
-        // alert(localStorage.getItem("authToken") + localStorage.getItem("email"))
-
         navigate("/");
       } else {
         setError("Invalid email or password. Please try again.")

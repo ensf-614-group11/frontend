@@ -58,8 +58,10 @@ function ShowtimesPage() {
     console.log(selectedMovieState)
     console.log(selectedTheatreState)
     if(selectedDate) {
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() - 1);
 
-      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const formattedDate = nextDay.toISOString().split("T")[0];
 
       const params = {
         date: formattedDate,

@@ -81,8 +81,6 @@ function RegisterPage({ onSwitch }) {
     } finally {
       setLoading(false); // Stop loading state
     }
-
-
   }
 
   return (
